@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>How to Add a System Call in Linux - Snapshots of Internal Monologues</title>
+  <meta name="author" content="Nishanth Vasudevan">
+
+  
+  <meta name="description" content="Here I am going to demonstrate what goes into incorporating a system call in a Linux 2.6 (on x86 architecture) When a user mode process invokes a &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://nishanthvasudevan.github.io/blog/2014/07/12/how-to-add-a-system-call-in-linux/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Snapshots of Internal Monologues" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-57137378-4']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Snapshots of Internal Monologues</a></h1>
+  
+    <h2>My personal tech blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="nishanthvasudevan.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">How to Add a System Call in Linux</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-07-12T10:37:54+05:30'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>10:37 am</span></time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://nishanthvasudevan.github.io">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Here I am going to demonstrate what goes into incorporating a system call in a Linux 2.6 (on x86 architecture)</p>
+
+<p>When a user mode process invokes a system call, the CPU switches to kernel mode and starts the execution of a kernel function.
+The switch to kernel mode is achieved using the int $0x80 or the sysenter instructions. The net result of both methods, however is a jump to an assembly language function called the system call handler.
+The user land process that calls the system call must pass a parameter called the system call number to identify the required system call. The %eax register is used for this purpose.</p>
+
+<!-- more -->
+
+
+<p>The parameters of ordinary C functions are usually passed by writing their values in the active program stack (either user mode stack or the kernel mode stack). Because system calls are a special kind of function that cross over from user to kernel land, neither the user mode or the kernel mode stacks can be used. So system call parameters are written in the CPU registers before issuing the system call. The kernel then copies the parameters stored in the CPU registers onto the kernel mode stack before invoking the system call service routine, because the latter is an ordinary C function. Two conditions must be satisfied for parameters to be passed in registers:
+1. The length of each parameter cannot exceed the length of a register
+2. The number of parameters must not exceed six (%ebx, %ecx, %edx, %esi, %edi and %ebp), besides the system call number passed in %eax, because x86 processors have a very limited number of registers.
+The return value is also sent across to user land using the %eax register.</p>
+
+<h3>Adding a new system call</h3>
+
+<p>Let us now add a new system call. Let’s call our system call “mynewcall&#8221;</p>
+
+<p>We have to register mynewcall in the kernel
+First let’s add a new sys call entry
+Open <code>arch/x86/include/asm/unistd_32.h</code> or <code>unistd_64.h</code> and add the following line after line number 345 (you will understand once you navigate to this line)
+#define __NR_mynewcall     <new-number> (new-number in this case 338, because the last used system call number was 337)
+<code>#define __NR_mynewcall 338</code>
+Couple of lines below this you will find #define NR_syscalls 338. Increment 338 by 1 to indicate addition of a new call
+<code>#define NR_syscalls 339</code>  (NR_syscalls is now 339)</p>
+
+<p>Next, we need update list of all sys call
+open <code>arch/x86/include/asm/syscalls.h</code>
+add <code>asmlinkage long sys_mynewcall(void);</code> at line 44</p>
+
+<p>Next, update the sys call table
+open <code>arch/x86/kernel/syscall_table_32.S</code>
+and add this line <code>.long sys_mynewcall /*338*/</code> to the end of the file (the 338 in the C comment section is only to indicate the number for someone reading the code. no special meaning attached to it.)</p>
+
+<p>Finally, let’s write our system call routine, in this case a simple C function</p>
+
+<p>add the lines below in <code>kernel/sys.c</code> (I am writing this in sys.c, and not in a separate file because I don’t want edit the kernel makefiles. Adding this in an already existing file will make things easier for this example and the compile time of the kernel will be reduced.)</p>
+
+<pre><code>    asmlinkage long sys_mynewcall(void)
+    {
+            printk(KERN_INFO “mynewcall with pid %d, process name %s\n”, current-&gt;pid, current-&gt;comm);
+            return 100; /\* Intentionally setting this value to 100. Check the return value of the user land code that calls mynewcall. It should be 100 \*/ 
+    }
+</code></pre>
+
+<p>The function above, will print the process-id and the path of the executable of the user land process that called this system call, in the circular kernel log buffer (check dmesg)</p>
+
+<p>After this step, recompile the kernel.</p>
+
+<h3>Testing our new system call</h3>
+
+<p>Now let us write a user land C program that calls our new system call</p>
+
+<pre><code>    f1()
+    {
+
+            __asm__("movl $338, %eax");
+            __asm__("int $0x80");
+    }
+
+    main()
+    {
+            printf("return value is %d\n",f1());
+    }
+</code></pre>
+
+<p>Running the program above should return
+“return value is 100&#8221;
+Note in the function f1(), that we are not calling return (it doesn’t make sense here). the return value is set in %eax as mentioned earlier.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Nishanth Vasudevan</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-07-12T10:37:54+05:30'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>10:37 am</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://nishanthvasudevan.github.io/blog/2014/07/12/how-to-add-a-system-call-in-linux/" data-via="nishanthvn86" data-counturl="http://nishanthvasudevan.github.io/blog/2014/07/12/how-to-add-a-system-call-in-linux/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/06/21/editing-global-variables-of-a-running-user-land-program-using-gdb/" title="Previous Post: Editing global variables of a running user land program using GDB">&laquo; Editing global variables of a running user land program using GDB</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/11/16/editing-kernel-global-variables/" title="Next Post: Editing kernel global variables">Editing kernel global variables &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/01/12/linux-kernel-data-structures-for-process-management/">Linux Kernel Data Structures for Process Management</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/16/editing-kernel-global-variables/">Editing Kernel Global Variables</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/12/how-to-add-a-system-call-in-linux/">How to Add a System Call in Linux</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/06/21/editing-global-variables-of-a-running-user-land-program-using-gdb/">Editing Global Variables of a Running User Land Program Using GDB</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/06/kexec-and-kdump/">Kexec and Kdump</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/nishanthvasudevan">@nishanthvasudevan</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'nishanthvasudevan',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Nishanth Vasudevan -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'nishanthvasudevangithubio';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://nishanthvasudevan.github.io/blog/2014/07/12/how-to-add-a-system-call-in-linux/';
+        var disqus_url = 'http://nishanthvasudevan.github.io/blog/2014/07/12/how-to-add-a-system-call-in-linux/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
