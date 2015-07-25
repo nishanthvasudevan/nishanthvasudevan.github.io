@@ -1,0 +1,650 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Linux Kernel Data Structures for Process Management - Snapshots of Internal Monologues</title>
+  <meta name="author" content="Nishanth Vasudevan">
+
+  
+  <meta name="description" content="The concept of a process is fundamental to any multiprogramming operating system. A process is usually defined as an instance of a program in &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://nishanthvasudevan.github.io/blog/2015/01/12/linux-kernel-data-structures-for-process-management/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Snapshots of Internal Monologues" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-57137378-4']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Snapshots of Internal Monologues</a></h1>
+  
+    <h2>My personal tech blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="nishanthvasudevan.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Linux Kernel Data Structures for Process Management</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-01-12T21:51:38+05:30'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:51 pm</span></time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://nishanthvasudevan.github.io">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>The concept of a process is fundamental to any multiprogramming operating system. A process is usually defined as an instance of a program in execution. They are often called tasks or threads in Linux source code.</p>
+
+<h3>struct task_struct</h3>
+
+<p>To manage processes, the kernel must have a clear picture of what each process is doing. It must know, for instance, the process’s priority, whether it is running on a CPU or blocked on an event, what address space has been assigned to it, which files it is allowed to address, and so on. This is the role of the process descriptor, a task_struct type structure whose fields contain all the information related to a single process.</p>
+
+<!-- more -->
+
+
+<p>(include/linux/sched.h)</p>
+
+<pre><code>struct task_struct {
+     volatile long state;     /* -1 unrunnable, 0 runnable, &gt;0 stopped */
+     void *stack;
+     atomic_t usage;
+     unsigned int flags;     /* per process flags, defined below */
+     unsigned int ptrace;
+
+     int lock_depth;          /* BKL lock depth */
+
+#ifdef CONFIG_SMP
+#ifdef __ARCH_WANT_UNLOCKED_CTXSW
+     int oncpu;
+#endif
+#endif
+
+     int prio, static_prio, normal_prio;
+     unsigned int rt_priority;
+     const struct sched_class *sched_class;
+     struct sched_entity se;
+     struct sched_rt_entity rt;
+
+#ifdef CONFIG_PREEMPT_NOTIFIERS
+     /* list of struct preempt_notifier: */
+     struct hlist_head preempt_notifiers;
+#endif
+
+     /*
+      * fpu_counter contains the number of consecutive context switches
+      * that the FPU is used. If this is over a threshold, the lazy fpu
+      * saving becomes unlazy to save the trap. This is an unsigned char
+      * so that after 256 times the counter wraps and the behavior turns
+      * lazy again; this to deal with bursty apps that only use FPU for
+      * a short time
+      */
+     unsigned char fpu_counter;
+#ifdef CONFIG_BLK_DEV_IO_TRACE
+     unsigned int btrace_seq;
+#endif
+
+     unsigned int policy;
+     cpumask_t cpus_allowed;
+
+#ifdef CONFIG_PREEMPT_RCU
+     int rcu_read_lock_nesting;
+     char rcu_read_unlock_special;
+     struct list_head rcu_node_entry;
+#endif /* #ifdef CONFIG_PREEMPT_RCU */
+#ifdef CONFIG_TREE_PREEMPT_RCU
+     struct rcu_node *rcu_blocked_node;
+#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+#ifdef CONFIG_RCU_BOOST
+     struct rt_mutex *rcu_boost_mutex;
+#endif /* #ifdef CONFIG_RCU_BOOST */
+
+#if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
+     struct sched_info sched_info;
+#endif
+
+     struct list_head tasks;
+#ifdef CONFIG_SMP
+     struct plist_node pushable_tasks;
+#endif
+
+     struct mm_struct *mm, *active_mm;
+#ifdef CONFIG_COMPAT_BRK
+     unsigned brk_randomized:1;
+#endif
+#if defined(SPLIT_RSS_COUNTING)
+     struct task_rss_stat     rss_stat;
+#endif
+/* task state */
+     int exit_state;
+     int exit_code, exit_signal;
+     int pdeath_signal;  /*  The signal sent when the parent dies  */
+     /* ??? */
+     unsigned int personality;
+     unsigned did_exec:1;
+     unsigned in_execve:1;     /* Tell the LSMs that the process is doing an
+                     * execve */
+     unsigned in_iowait:1;
+
+
+     /* Revert to default priority/policy when forking */
+     unsigned sched_reset_on_fork:1;
+
+     pid_t pid;
+     pid_t tgid;
+
+#ifdef CONFIG_CC_STACKPROTECTOR
+     /* Canary value for the -fstack-protector gcc feature */
+     unsigned long stack_canary;
+#endif
+
+     /*
+      * pointers to (original) parent process, youngest child, younger sibling,
+      * older sibling, respectively.  (p-&gt;father can be replaced with
+      * p-&gt;real_parent-&gt;pid)
+      */
+     struct task_struct *real_parent; /* real parent process */
+     struct task_struct *parent; /* recipient of SIGCHLD, wait4() reports */
+     /*
+      * children/sibling forms the list of my natural children
+      */
+     struct list_head children;     /* list of my children */
+     struct list_head sibling;     /* linkage in my parent's children list */
+     struct task_struct *group_leader;     /* threadgroup leader */
+
+     /*
+      * ptraced is the list of tasks this task is using ptrace on.
+      * This includes both natural children and PTRACE_ATTACH targets.
+      * p-&gt;ptrace_entry is p's link on the p-&gt;parent-&gt;ptraced list.
+      */
+     struct list_head ptraced;
+     struct list_head ptrace_entry;
+
+     /* PID/PID hash table linkage. */
+     struct pid_link pids[PIDTYPE_MAX];
+     struct list_head thread_group;
+
+     struct completion *vfork_done;          /* for vfork() */
+     int __user *set_child_tid;          /* CLONE_CHILD_SETTID */
+     int __user *clear_child_tid;          /* CLONE_CHILD_CLEARTID */
+
+     cputime_t utime, stime, utimescaled, stimescaled;
+     cputime_t gtime;
+#ifndef CONFIG_VIRT_CPU_ACCOUNTING
+     cputime_t prev_utime, prev_stime;
+#endif
+     unsigned long nvcsw, nivcsw; /* context switch counts */
+     struct timespec start_time;           /* monotonic time */
+     struct timespec real_start_time;     /* boot based time */
+/* mm fault and swap info: this can arguably be seen as either mm-specific or thread-specific */
+     unsigned long min_flt, maj_flt;
+
+     struct task_cputime cputime_expires;
+     struct list_head cpu_timers[3];
+
+/* process credentials */
+     const struct cred __rcu *real_cred; /* objective and real subjective task
+                          * credentials (COW) */
+     const struct cred __rcu *cred;     /* effective (overridable) subjective task
+                          * credentials (COW) */
+     struct cred *replacement_session_keyring; /* for KEYCTL_SESSION_TO_PARENT */
+
+     char comm[TASK_COMM_LEN]; /* executable name excluding path
+                         - access with [gs]et_task_comm (which lock
+                           it with task_lock())
+                         - initialized normally by setup_new_exec */
+/* file system info */
+     int link_count, total_link_count;
+#ifdef CONFIG_SYSVIPC
+/* ipc stuff */
+     struct sysv_sem sysvsem;
+#endif
+#ifdef CONFIG_DETECT_HUNG_TASK
+/* hung task detection */
+     unsigned long last_switch_count;
+#endif
+/* CPU-specific state of this task */
+     struct thread_struct thread;
+/* filesystem information */
+     struct fs_struct *fs;
+/* open file information */
+     struct files_struct *files;
+/* namespaces */
+     struct nsproxy *nsproxy;
+/* signal handlers */
+     struct signal_struct *signal;
+     struct sighand_struct *sighand;
+
+     sigset_t blocked, real_blocked;
+     sigset_t saved_sigmask;     /* restored if set_restore_sigmask() was used */
+     struct sigpending pending;
+
+     unsigned long sas_ss_sp;
+     size_t sas_ss_size;
+     int (*notifier)(void *priv);
+     void *notifier_data;
+     sigset_t *notifier_mask;
+     struct audit_context *audit_context;
+#ifdef CONFIG_AUDITSYSCALL
+     uid_t loginuid;
+     unsigned int sessionid;
+#endif
+     seccomp_t seccomp;
+
+/* Thread group tracking */
+        u32 parent_exec_id;
+        u32 self_exec_id;
+/* Protection of (de-)allocation: mm, files, fs, tty, keyrings, mems_allowed,
+ * mempolicy */
+     spinlock_t alloc_lock;
+
+#ifdef CONFIG_GENERIC_HARDIRQS
+     /* IRQ handler threads */
+     struct irqaction *irqaction;
+#endif
+
+     /* Protection of the PI data structures: */
+     raw_spinlock_t pi_lock;
+
+#ifdef CONFIG_RT_MUTEXES
+     /* PI waiters blocked on a rt_mutex held by this task */
+     struct plist_head pi_waiters;
+     /* Deadlock detection and priority inheritance handling */
+     struct rt_mutex_waiter *pi_blocked_on;
+#endif
+
+#ifdef CONFIG_DEBUG_MUTEXES
+     /* mutex deadlock detection */
+     struct mutex_waiter *blocked_on;
+#endif
+#ifdef CONFIG_TRACE_IRQFLAGS
+     unsigned int irq_events;
+     unsigned long hardirq_enable_ip;
+     unsigned long hardirq_disable_ip;
+     unsigned int hardirq_enable_event;
+     unsigned int hardirq_disable_event;
+     int hardirqs_enabled;
+     int hardirq_context;
+     unsigned long softirq_disable_ip;
+     unsigned long softirq_enable_ip;
+     unsigned int softirq_disable_event;
+     unsigned int softirq_enable_event;
+     int softirqs_enabled;
+     int softirq_context;
+#endif
+#ifdef CONFIG_LOCKDEP
+# define MAX_LOCK_DEPTH 48UL
+     u64 curr_chain_key;
+     int lockdep_depth;
+     unsigned int lockdep_recursion;
+     struct held_lock held_locks[MAX_LOCK_DEPTH];
+     gfp_t lockdep_reclaim_gfp;
+#endif
+
+/* journalling filesystem info */
+     void *journal_info;
+
+/* stacked block device info */
+     struct bio_list *bio_list;
+
+#ifdef CONFIG_BLOCK
+/* stack plugging */
+     struct blk_plug *plug;
+#endif
+
+/* VM state */
+     struct reclaim_state *reclaim_state;
+
+     struct backing_dev_info *backing_dev_info;
+
+     struct io_context *io_context;
+
+     unsigned long ptrace_message;
+     siginfo_t *last_siginfo; /* For ptrace use.  */
+     struct task_io_accounting ioac;
+#if defined(CONFIG_TASK_XACCT)
+     u64 acct_rss_mem1;     /* accumulated rss usage */
+     u64 acct_vm_mem1;     /* accumulated virtual memory usage */
+     cputime_t acct_timexpd;     /* stime + utime since last update */
+#endif
+#ifdef CONFIG_CPUSETS
+     nodemask_t mems_allowed;     /* Protected by alloc_lock */
+     int mems_allowed_change_disable;
+     int cpuset_mem_spread_rotor;
+     int cpuset_slab_spread_rotor;
+#endif
+#ifdef CONFIG_CGROUPS
+     /* Control Group info protected by css_set_lock */
+     struct css_set __rcu *cgroups;
+     /* cg_list protected by css_set_lock and tsk-&gt;alloc_lock */
+     struct list_head cg_list;
+#endif
+#ifdef CONFIG_FUTEX
+     struct robust_list_head __user *robust_list;
+#ifdef CONFIG_COMPAT
+     struct compat_robust_list_head __user *compat_robust_list;
+#endif
+     struct list_head pi_state_list;
+     struct futex_pi_state *pi_state_cache;
+#endif
+#ifdef CONFIG_PERF_EVENTS
+     struct perf_event_context *perf_event_ctxp[perf_nr_task_contexts];
+     struct mutex perf_event_mutex;
+     struct list_head perf_event_list;
+#endif
+#ifdef CONFIG_NUMA
+     struct mempolicy *mempolicy;     /* Protected by alloc_lock */
+     short il_next;
+     short pref_node_fork;
+#endif
+     atomic_t fs_excl;     /* holding fs exclusive resources */
+     struct rcu_head rcu;
+
+     /*
+      * cache last used pipe for splice
+      */
+     struct pipe_inode_info *splice_pipe;
+#ifdef     CONFIG_TASK_DELAY_ACCT
+     struct task_delay_info *delays;
+#endif
+#ifdef CONFIG_FAULT_INJECTION
+     int make_it_fail;
+#endif
+     struct prop_local_single dirties;
+#ifdef CONFIG_LATENCYTOP
+     int latency_record_count;
+     struct latency_record latency_record[LT_SAVECOUNT];
+#endif
+     /*
+      * time slack values; these are used to round up poll() and
+      * select() etc timeout values. These are in nanoseconds.
+      */
+     unsigned long timer_slack_ns;
+     unsigned long default_timer_slack_ns;
+
+     struct list_head     *scm_work_list;
+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+     /* Index of current stored address in ret_stack */
+     int curr_ret_stack;
+     /* Stack of return addresses for return function tracing */
+     struct ftrace_ret_stack     *ret_stack;
+     /* time stamp for last schedule */
+     unsigned long long ftrace_timestamp;
+     /*
+      * Number of functions that haven't been traced
+      * because of depth overrun.
+      */
+     atomic_t trace_overrun;
+     /* Pause for the tracing */
+     atomic_t tracing_graph_pause;
+#endif
+#ifdef CONFIG_TRACING
+     /* state flags for use by tracers */
+     unsigned long trace;
+     /* bitmask of trace recursion */
+     unsigned long trace_recursion;
+#endif /* CONFIG_TRACING */
+#ifdef CONFIG_CGROUP_MEM_RES_CTLR /* memcg uses this to do batch job */
+     struct memcg_batch_info {
+          int do_batch;     /* incremented when batch uncharge started */
+          struct mem_cgroup *memcg; /* target memcg of uncharge */
+          unsigned long nr_pages;     /* uncharged usage */
+          unsigned long memsw_nr_pages; /* uncharged mem+swap usage */
+     } memcg_batch;
+#endif
+#ifdef CONFIG_HAVE_HW_BREAKPOINT
+     atomic_t ptrace_bp_refcnt;
+#endif
+};
+</code></pre>
+
+<h3>struct thread_info</h3>
+
+<p>Each process descriptor is linked to a 2 page chunk of memory containing a kernel run-time stack for the process and a small (52 byte) thread data structure. This chunk of physical memory is mapped to the same virtual address for every dispatched task. This mapping occurs when a Linux process makes it to the CPU for execution. When a process enters the kernel, its kernel stack is initially empty, and the thread_info structure can easily be found as an offset to %esp register. Since the thread_info structure contains a pointer to the process descriptor as its first field, the kernel can quickly locate the descriptor on each context switch. thread_union structure contains the thread_info as well as the process description pointer (task_struct structure)</p>
+
+<p><code>(include/linux/sched.h)</code></p>
+
+<pre><code>union thread_union {  
+        struct thread_info thread_info;  
+        unsigned long stack[THREAD_SIZE/sizeof(long)];  
+};  
+</code></pre>
+
+<p><a href="https://github.com/nishanthvasudevan/kernelspacecode/tree/master/task_struct_traversal">Click this link to see how you can traverse the task_struct</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Nishanth Vasudevan</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2015-01-12T21:51:38+05:30'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:51 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://nishanthvasudevan.github.io/blog/2015/01/12/linux-kernel-data-structures-for-process-management/" data-via="nishanthvn86" data-counturl="http://nishanthvasudevan.github.io/blog/2015/01/12/linux-kernel-data-structures-for-process-management/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/11/16/editing-kernel-global-variables/" title="Previous Post: Editing kernel global variables">&laquo; Editing kernel global variables</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/01/12/linux-kernel-data-structures-for-process-management/">Linux Kernel Data Structures for Process Management</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/16/editing-kernel-global-variables/">Editing Kernel Global Variables</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/12/how-to-add-a-system-call-in-linux/">How to Add a System Call in Linux</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/06/21/editing-global-variables-of-a-running-user-land-program-using-gdb/">Editing Global Variables of a Running User Land Program Using GDB</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/06/kexec-and-kdump/">Kexec and Kdump</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/nishanthvasudevan">@nishanthvasudevan</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'nishanthvasudevan',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Nishanth Vasudevan -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'nishanthvasudevangithubio';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://nishanthvasudevan.github.io/blog/2015/01/12/linux-kernel-data-structures-for-process-management/';
+        var disqus_url = 'http://nishanthvasudevan.github.io/blog/2015/01/12/linux-kernel-data-structures-for-process-management/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

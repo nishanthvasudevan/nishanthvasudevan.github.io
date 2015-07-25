@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://nishanthvasudevan.github.io/blog/2015/01/12/linux-kernel-data-structures-for-process-management/</loc>
+    <lastmod>2015-01-12T21:51:38+05:30</lastmod>
+  </url>
+  <url>
+    <loc>http://nishanthvasudevan.github.io/blog/2014/11/16/editing-kernel-global-variables/</loc>
+    <lastmod>2014-11-16T20:58:30+05:30</lastmod>
+  </url>
+  <url>
+    <loc>http://nishanthvasudevan.github.io/blog/2014/07/12/how-to-add-a-system-call-in-linux/</loc>
+    <lastmod>2014-07-12T10:37:54+05:30</lastmod>
+  </url>
+  <url>
+    <loc>http://nishanthvasudevan.github.io/blog/2014/06/21/editing-global-variables-of-a-running-user-land-program-using-gdb/</loc>
+    <lastmod>2014-06-21T21:09:36+05:30</lastmod>
+  </url>
+  <url>
+    <loc>http://nishanthvasudevan.github.io/blog/2014/05/06/kexec-and-kdump/</loc>
+    <lastmod>2014-05-06T22:48:30+05:30</lastmod>
+  </url>
+  <url>
+    <loc>http://nishanthvasudevan.github.io/blog/archives/</loc>
+  </url>
+  <url>
+    <loc>http://nishanthvasudevan.github.io/</loc>
+  </url>
+</urlset>

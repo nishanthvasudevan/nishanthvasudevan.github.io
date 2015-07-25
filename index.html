@@ -1,0 +1,402 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Snapshots of Internal Monologues</title>
+  <meta name="author" content="Nishanth Vasudevan">
+
+  
+  <meta name="description" content="The concept of a process is fundamental to any multiprogramming operating system. A process is usually defined as an instance of a program in &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://nishanthvasudevan.github.io/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Snapshots of Internal Monologues" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-57137378-4']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Snapshots of Internal Monologues</a></h1>
+  
+    <h2>My personal tech blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="nishanthvasudevan.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/01/12/linux-kernel-data-structures-for-process-management/">Linux Kernel Data Structures for Process Management</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-01-12T21:51:38+05:30'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:51 pm</span></time>
+        
+           | <a href="/blog/2015/01/12/linux-kernel-data-structures-for-process-management/#disqus_thread"
+             data-disqus-identifier="http://nishanthvasudevan.github.io/blog/2015/01/12/linux-kernel-data-structures-for-process-management/">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>The concept of a process is fundamental to any multiprogramming operating system. A process is usually defined as an instance of a program in execution. They are often called tasks or threads in Linux source code.</p>
+
+<h3>struct task_struct</h3>
+
+<p>To manage processes, the kernel must have a clear picture of what each process is doing. It must know, for instance, the process’s priority, whether it is running on a CPU or blocked on an event, what address space has been assigned to it, which files it is allowed to address, and so on. This is the role of the process descriptor, a task_struct type structure whose fields contain all the information related to a single process.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/01/12/linux-kernel-data-structures-for-process-management/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/11/16/editing-kernel-global-variables/">Editing Kernel Global Variables</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-11-16T20:58:30+05:30'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>8:58 pm</span></time>
+        
+           | <a href="/blog/2014/11/16/editing-kernel-global-variables/#disqus_thread"
+             data-disqus-identifier="http://nishanthvasudevan.github.io/blog/2014/11/16/editing-kernel-global-variables/">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In this article I will demonstrate how to edit kernel global variables using KDB. I am assuming that the kernel is compiled for debugging and it had CONFIG_KALLSYMS enabled during configuration.<br/>
+KDB is one of the debugger front ends available in Linux which interfaces to the debug core. The other one is KGDB. KDB is a simplistic shell-style interface which can be used on a system console with a keyboard or serial console. It can used to inspect memory, registers, process lists, dmesg and even set breakpoints to stop in a certain location. It is however not a source debugger, although it is possible to set breakpoints and execute some basic kernel run control. It is mainly aimed at doing some analysis to aid in development or diagnosing kernel problems.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/11/16/editing-kernel-global-variables/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/12/how-to-add-a-system-call-in-linux/">How to Add a System Call in Linux</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-07-12T10:37:54+05:30'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>10:37 am</span></time>
+        
+           | <a href="/blog/2014/07/12/how-to-add-a-system-call-in-linux/#disqus_thread"
+             data-disqus-identifier="http://nishanthvasudevan.github.io/blog/2014/07/12/how-to-add-a-system-call-in-linux/">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Here I am going to demonstrate what goes into incorporating a system call in a Linux 2.6 (on x86 architecture)</p>
+
+<p>When a user mode process invokes a system call, the CPU switches to kernel mode and starts the execution of a kernel function.
+The switch to kernel mode is achieved using the int $0x80 or the sysenter instructions. The net result of both methods, however is a jump to an assembly language function called the system call handler.
+The user land process that calls the system call must pass a parameter called the system call number to identify the required system call. The %eax register is used for this purpose.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/07/12/how-to-add-a-system-call-in-linux/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/06/21/editing-global-variables-of-a-running-user-land-program-using-gdb/">Editing Global Variables of a Running User Land Program Using GDB</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-06-21T21:09:36+05:30'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2014</span></span> <span class='time'>9:09 pm</span></time>
+        
+           | <a href="/blog/2014/06/21/editing-global-variables-of-a-running-user-land-program-using-gdb/#disqus_thread"
+             data-disqus-identifier="http://nishanthvasudevan.github.io/blog/2014/06/21/editing-global-variables-of-a-running-user-land-program-using-gdb/">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In this article, I will demonstrate how to edit a global variable of a user land process using GDB. A simple use case of this method that comes to mind is editing the value representing the number of licenses of a product.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/06/21/editing-global-variables-of-a-running-user-land-program-using-gdb/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/06/kexec-and-kdump/">Kexec and Kdump</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-05-06T22:48:30+05:30'><span class='date'><span class='date-month'>May</span> <span class='date-day'>6</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>10:48 pm</span></time>
+        
+           | <a href="/blog/2014/05/06/kexec-and-kdump/#disqus_thread"
+             data-disqus-identifier="http://nishanthvasudevan.github.io/blog/2014/05/06/kexec-and-kdump/">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Kexec uses the image overlay philosophy of the UNIX exec() system call to spawn a new kernel over a running kernel. Essentially, it skips the boot loader stage and directly loads the new kernel into memory, where it starts executing immediately. Kexec’s most popular user is Kdump.</p>
+
+<p>Kdump is used to capture the crash dump from the context of a freshly booted kernel and not from the context of the crashed kernel.<br/>
+The first kernel reserves a section of memory that the second kernel uses to boot. Kdump is supported in i686, x86_64,a64 and ppc64 platforms.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/05/06/kexec-and-kdump/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/01/12/linux-kernel-data-structures-for-process-management/">Linux Kernel Data Structures for Process Management</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/16/editing-kernel-global-variables/">Editing Kernel Global Variables</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/12/how-to-add-a-system-call-in-linux/">How to Add a System Call in Linux</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/06/21/editing-global-variables-of-a-running-user-land-program-using-gdb/">Editing Global Variables of a Running User Land Program Using GDB</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/06/kexec-and-kdump/">Kexec and Kdump</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/nishanthvasudevan">@nishanthvasudevan</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'nishanthvasudevan',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Nishanth Vasudevan -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'nishanthvasudevangithubio';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
