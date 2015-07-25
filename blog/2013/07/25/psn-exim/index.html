@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Editing Kernel Global Variables - Snapshots of Internal Monologues</title>
+  <title>Introducing PSN Exim - Snapshots of Internal Monologues</title>
   <meta name="author" content="Nishanth Vasudevan">
 
   
-  <meta name="description" content="In this article I will demonstrate how to edit kernel global variables using KDB. I am assuming that the kernel is compiled for debugging and it had &hellip;">
+  <meta name="description" content="I am writing this post to introduce my friend&rsquo;s brand new export business. He needs some web traffic into his website to increase the site& &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://nishanthvasudevan.github.io/blog/2014/11/16/editing-kernel-global-variables/">
+  <link rel="canonical" href="http://nishanthvasudevan.github.io/blog/2013/07/25/psn-exim/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Snapshots of Internal Monologues" type="application/atom+xml">
@@ -80,7 +80,7 @@
   
   <header>
     
-      <h1 class="entry-title">Editing Kernel Global Variables</h1>
+      <h1 class="entry-title">Introducing PSN Exim</h1>
     
     
       <p class="meta">
@@ -89,7 +89,7 @@
 
 
 
-<time class='entry-date' datetime='2014-11-16T20:58:30+05:30'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>8:58 pm</span></time>
+<time class='entry-date' datetime='2013-07-25T23:30:00+05:30'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>11:30 pm</span></time>
         
            | <a href="#disqus_thread"
              data-disqus-identifier="http://nishanthvasudevan.github.io">Comments</a>
@@ -99,67 +99,11 @@
   </header>
 
 
-<div class="entry-content"><p>In this article I will demonstrate how to edit kernel global variables using KDB. I am assuming that the kernel is compiled for debugging and it had CONFIG_KALLSYMS enabled during configuration.<br/>
-KDB is one of the debugger front ends available in Linux which interfaces to the debug core. The other one is KGDB. KDB is a simplistic shell-style interface which can be used on a system console with a keyboard or serial console. It can used to inspect memory, registers, process lists, dmesg and even set breakpoints to stop in a certain location. It is however not a source debugger, although it is possible to set breakpoints and execute some basic kernel run control. It is mainly aimed at doing some analysis to aid in development or diagnosing kernel problems.</p>
+<div class="entry-content"><p>I am writing this post to introduce my friend&rsquo;s brand new export business. He needs some web traffic into his website to increase the site&rsquo;s search ranking, hence the post.</p>
 
-<!-- more -->
+<h3><a href="http://www.psnexim.com">PSN Exim</a></h3>
 
-
-<p></p>
-
-<h3>Entering KDB</h3>
-
-<p>Go to virtual console 1 (CTRL-ALT-F1)</p>
-
-<pre><code>$ echo “kbd” &gt; /sys/module/kgdboc/parameters/kgdboc
-$ echo g &gt; /proc/sysrq-trigger  
-</code></pre>
-
-<p>Now we are in kdb prompt, to go back to shell, type ‘go’ inside kdb and hit enter.</p>
-
-<p>Let’s pick a harmless command,  *sync.<br/>
-sync command calls the sync system call, which in turn calls sys_sync() function</p>
-
-<p>Let’s enter kdb and set a breakpoint for sys_sync</p>
-
-<pre><code>$ echo g &gt; /proc/sysrq-trigger  
-kdb&gt; bp sys_sync  
-kdb&gt; go  
-$ sync (As soon as we hit enter, the sys_sync() function is called but since there is breakpoint set for that function, we enter kdb)  
-kdb&gt;  
-</code></pre>
-
-<p><img src="/images/2014-11-16-editing-kernel-global-variables-screenshot1.png" alt="Alt text" /></p>
-
-<h3>Editing PID_MAX</h3>
-
-<pre><code># cat /proc/sys/kernel/pid_max
-65536  
-</code></pre>
-
-<p>65536 in hex is 0x00010000<br/>
-Let’s set it to 32768 which in hex is 0x0001000 / 2 =  0x00008000</p>
-
-<p>There are many ways to edit this value. But none of them are as cool as what I am about to show you.</p>
-
-<pre><code># grep pid_max /proc/kallsyms  
-c0f283ac D pid_max  
-c0f283b0 D pid_max_min  
-c0f283b4 D pid_max_max  
-
-# echo g &gt; /proc/sysrq-trigger  
-kdb&gt; md c0f283ac  
-kdb&gt; mm c0f283ac 0x00008000  
-kdb&gt;go  
-# cat /proc/sys/kernel/pid_max  
-32768   
-</code></pre>
-
-<p>There you go a kernel variable has been modified live using KDB</p>
-
-<p><img src="/images/2014-11-16-editing-kernel-global-variables-screenshot2.png" alt="Alt text" /></p>
-
-<p><img src="/images/2014-11-16-editing-kernel-global-variables-screenshot3.png" alt="Alt text" /></p>
+<p>PSN Exim is an export company that specializes in commodity trading. The company is based in Bangalore with it&rsquo;s office in <a href="http://www.psnexim.com/contact-us.html">RMZ Infinity, Old Madras Road</a>. The company trades both soft commodities such as a variety of <a href="http://www.psnexim.com/mustardseeds.html">spices</a> and <a href="http://www.psnexim.com/agarwood.html">agarwood</a> and hard commodities such as <a href="http://www.psnexim.com/cobblesandpebbles.html">natural stones</a>, <a href="http://www.psnexim.com/quartzite.html">minerals</a> and <a href="http://www.psnexim.com/steam-coal.html">steam coal</a>. The materials are sourced internationally from South Africa, Australia, South America and domestically from Rajasthan, Karnataka, Gujarat, AP and Assam. Please head over to the website <a href="http://www.psnexim.com">PSN Exim</a> to know more.</p>
 </div>
 
 
@@ -175,7 +119,7 @@ kdb&gt;go
 
 
 
-<time class='entry-date' datetime='2014-11-16T20:58:30+05:30'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>8:58 pm</span></time>
+<time class='entry-date' datetime='2013-07-25T23:30:00+05:30'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>11:30 pm</span></time>
       
 
 
@@ -183,7 +127,7 @@ kdb&gt;go
     
       <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://nishanthvasudevan.github.io/blog/2014/11/16/editing-kernel-global-variables/" data-via="nishanthvn86" data-counturl="http://nishanthvasudevan.github.io/blog/2014/11/16/editing-kernel-global-variables/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://nishanthvasudevan.github.io/blog/2013/07/25/psn-exim/" data-via="nishanthvn86" data-counturl="http://nishanthvasudevan.github.io/blog/2013/07/25/psn-exim/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -196,10 +140,8 @@ kdb&gt;go
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/07/12/how-to-add-a-system-call-in-linux/" title="Previous Post: How to add a system call in Linux">&laquo; How to add a system call in Linux</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/01/12/linux-kernel-data-structures-for-process-management/" title="Next Post: Linux kernel data structures for process management">Linux kernel data structures for process management &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2014/05/06/kexec-and-kdump/" title="Next Post: Kexec and Kdump">Kexec and Kdump &raquo;</a>
       
     </p>
   </footer>
@@ -303,8 +245,8 @@ kdb&gt;go
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://nishanthvasudevan.github.io/blog/2014/11/16/editing-kernel-global-variables/';
-        var disqus_url = 'http://nishanthvasudevan.github.io/blog/2014/11/16/editing-kernel-global-variables/';
+        var disqus_identifier = 'http://nishanthvasudevan.github.io/blog/2013/07/25/psn-exim/';
+        var disqus_url = 'http://nishanthvasudevan.github.io/blog/2013/07/25/psn-exim/';
         var disqus_script = 'embed.js';
       
     (function () {

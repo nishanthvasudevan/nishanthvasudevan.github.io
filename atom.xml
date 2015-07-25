@@ -4,7 +4,7 @@
   <title><![CDATA[Snapshots of Internal Monologues]]></title>
   <link href="http://nishanthvasudevan.github.io/atom.xml" rel="self"/>
   <link href="http://nishanthvasudevan.github.io/"/>
-  <updated>2015-05-07T01:12:21+05:30</updated>
+  <updated>2015-07-26T00:06:06+05:30</updated>
   <id>http://nishanthvasudevan.github.io/</id>
   <author>
     <name><![CDATA[Nishanth Vasudevan]]></name>
@@ -832,6 +832,19 @@ PID: 3034   TASK: f6b16550  CPU: 0   COMMAND: &ldquo;cat&rdquo;<br/>
     SS:  007b      ESP: bf94cf18  EBP: bf94cf58  GS:  0033<br/>
     CS:  0073      EIP: 0050c424  ERR: 00000003  EFLAGS: 00000246<br/>
 crash></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Introducing PSN Exim]]></title>
+    <link href="http://nishanthvasudevan.github.io/blog/2013/07/25/psn-exim/"/>
+    <updated>2013-07-25T23:30:00+05:30</updated>
+    <id>http://nishanthvasudevan.github.io/blog/2013/07/25/psn-exim</id>
+    <content type="html"><![CDATA[<p>I am writing this post to introduce my friend&rsquo;s brand new export business. He needs some web traffic into his website to increase the site&rsquo;s search ranking, hence the post.</p>
+
+<h3><a href="http://www.psnexim.com">PSN Exim</a></h3>
+
+<p>PSN Exim is an export company that specializes in commodity trading. The company is based in Bangalore with it&rsquo;s office in <a href="http://www.psnexim.com/contact-us.html">RMZ Infinity, Old Madras Road</a>. The company trades both soft commodities such as a variety of <a href="http://www.psnexim.com/mustardseeds.html">spices</a> and <a href="http://www.psnexim.com/agarwood.html">agarwood</a> and hard commodities such as <a href="http://www.psnexim.com/cobblesandpebbles.html">natural stones</a>, <a href="http://www.psnexim.com/quartzite.html">minerals</a> and <a href="http://www.psnexim.com/steam-coal.html">steam coal</a>. The materials are sourced internationally from South Africa, Australia, South America and domestically from Rajasthan, Karnataka, Gujarat, AP and Assam. Please head over to the website <a href="http://www.psnexim.com">PSN Exim</a> to know more.</p>
 ]]></content>
   </entry>
   
